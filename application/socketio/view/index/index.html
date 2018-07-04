@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>测试WebSocket</title>
+</head>
+<body>
+
+<input type="text" name="" id="msg">
+<button id='send'>发送消息</button>
+	
+</body>
+<script src='https://cdn.bootcss.com/socket.io/2.0.3/socket.io.js'></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script>
+// 如果服务端不在本机，请把127.0.0.1改成服务端ip
+var socket = io('http://127.0.0.1:2021');
+// 当连接服务端成功时触发connect默认事件
+socket.on('connect', function(){
+    console.log('connect success');
+});
+socket.on('success', function(msg){
+	alert(msg);
+});
+
+socket.on('sendMsg', function(msg){
+	console.log(msg);
+});
+
+$('#send').on('click', function(){
+	var text = $('#msg').val();
+	socket.emit('sendMsg', text);
+	// alert(text);
+})
+
+</script>
+</html>
