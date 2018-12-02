@@ -3,6 +3,11 @@ namespace app\socketio\controller;
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
 use think\Db;
+
+/** 服务端
+ * Class Server
+ * @package app\socketio\controller
+ */
 class Server{
 
 	public function index(){
