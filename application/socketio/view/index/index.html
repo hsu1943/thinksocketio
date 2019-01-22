@@ -2,36 +2,71 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>测试WebSocket</title>
+	<title>测试WebSocket聊天室</title>
 </head>
 <body>
 
 <input type="text" name="" id="msg">
 <button id='send'>发送消息</button>
+
+<h2>消息列表：</h2>
+<br>
+<div id="chats">
+    <ul id="chats-list">
+
+    </ul>
+</div>
 	
 </body>
-<script src='https://cdn.bootcss.com/socket.io/2.0.3/socket.io.js'></script>
-<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src='//cdn.bootcss.com/socket.io/2.0.3/socket.io.js'></script>
+<script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
 <script>
 // 如果服务端不在本机，请把127.0.0.1改成服务端ip
-var socket = io('http://127.0.0.1:2021');
+var socket = io('http://192.168.0.208:2021');
+var username;
+function getUsername() {
+	if(username) {
+	    return username;
+	} else {
+	    username = localStorage.getItem('client_username');
+        return  username ? username : '';
+	}
+}
+
 // 当连接服务端成功时触发connect默认事件
 socket.on('connect', function(){
     console.log('connect success');
+    console.log('socket.id:' + socket.id);
+    username = getUsername();
+    console.log('从本地读取username ==> ' + username);
+    socket.emit('success', {username:username})
 });
-socket.on('success', function(msg){
-	alert(msg);
+
+socket.on('success', function(data){
+    data = JSON.parse(data);
+    username = data.username;
+    localStorage.setItem('client_username', username);
+    alert(username + '连接成功！');
 });
 
 socket.on('sendMsg', function(msg){
-	console.log(msg);
+    data = JSON.parse(msg);
+    $('#chats-list').prepend('<li>' + data.msg + '</li>');
+    $('#msg').val('');
 });
 
 $('#send').on('click', function(){
 	var text = $('#msg').val();
-	socket.emit('sendMsg', text);
+	socket.emit('sendMsg', {"username":username, "msg":text});
 	// alert(text);
 })
+
+$('#msg').bind('keyup', function(event) {
+    if (event.keyCode == "13") {
+        //回车执行查询
+        $('#send').click();
+    }
+});
 
 </script>
 </html>
