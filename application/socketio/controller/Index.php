@@ -1,6 +1,9 @@
 <?php
+
 namespace app\socketio\controller;
+
 use think\Controller;
+use think\facade\Request;
 
 /**
  * 前端界面显示
@@ -12,5 +15,11 @@ class Index extends Controller
     public function index()
     {
         return view();
+    }
+
+    public function chat()
+    {
+        $username = Request::get('username');
+        return view('chat', ['to' => $username]);
     }
 }

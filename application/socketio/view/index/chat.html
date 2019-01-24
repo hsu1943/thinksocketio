@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <title>与{$to}私聊</title>
+</head>
+<style>
+    .open-chat {
+        color: springgreen
+    }
+
+    .myself-caht {
+        color: blueviolet
+    }
+</style>
+<body>
+<input type="hidden" id="tousername" value="{$to}">
+<input type="text" name="" id="msg" title="消息框">
+<button id='send'>发送消息</button>
+
+<h2>消息列表：</h2>
+<br>
+<div id="chats">
+    <ul id="chats-list">
+
+    </ul>
+</div>
+
+</body>
+<script src='//cdn.bootcss.com/socket.io/2.0.3/socket.io.js'></script>
+<script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    // 如果服务端不在本机，请把127.0.0.1改成服务端ip
+    var socket = io('http://127.0.0.1:2021');
+    var username;
+    function getUsername() {
+        if (username) {
+            return username;
+        } else {
+            username = localStorage.getItem('client_username');
+            return username ? username : '';
+        }
+    }
+
+
+    // 当连接服务端成功时触发connect默认事件
+    socket.on('connect', function () {
+        console.log('connect success');
+        console.log('socket.id:' + socket.id);
+        username = getUsername();
+        console.log('从本地读取username ==> ' + username);
+        socket.emit('success', {username: username})
+    });
+
+    socket.on('success', function (data) {
+        data = JSON.parse(data);
+        username = data.username;
+        localStorage.setItem('client_username', username);
+        alert(username + '连接成功！');
+    });
+
+    socket.on('private chat', function (msg) {
+        var data = JSON.parse(msg);
+        var to = $('#tousername').val();
+        if (data.from === to) {
+            $('#chats-list').prepend('<li>' + data.from + ' <span class="open-chat">SAY</span> : ' + data.msg + '</li>');
+        }
+    });
+
+    $('#send').on('click', function () {
+        var text = $('#msg').val();
+        var to = $('#tousername').val();
+        $('#chats-list').prepend('<li>You <span class="myself-caht">SAY</span> : ' + text + '</li>');
+        socket.emit('private chat', {"from": username, "msg": text, "to": to});
+        // alert(text);
+    })
+
+    $('#msg').bind('keyup', function (event) {
+        if (event.keyCode == "13") {
+            //回车执行查询
+            $('#send').click();
+        }
+    });
+
+</script>
+</html>
