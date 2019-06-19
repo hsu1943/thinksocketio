@@ -13,11 +13,28 @@
     .myself-caht {
         color: blueviolet
     }
+
+    body {
+        width: 90%;
+        margin: 5% auto;
+    }
+
+    .menu {
+        float: right;
+    }
+
+    .to {
+        color: brown;
+        font-style: italic;
+    }
 </style>
 <body>
+<h1>与【<span class="to">{$to}</span>】私聊 <a href="/socketio" target="_blank"><span class="menu">广场</span></a></h1>
 <input type="hidden" id="tousername" value="{$to}">
-<input type="text" name="" id="msg" title="消息框">
-<button id='send'>发送消息</button>
+<h3>当前用户【<span class="open-chat" id="username"></span>】</h3>
+
+消息：<input type="text" name="" id="msg" title="消息框">
+<button id='send'>发送</button>
 
 <h2>消息列表：</h2>
 <br>
@@ -57,21 +74,22 @@
         data = JSON.parse(data);
         username = data.username;
         localStorage.setItem('client_username', username);
-        alert(username + '连接成功！');
+        console.log(username + '连接成功！');
+        $('#username').text(username);
     });
 
     socket.on('private chat', function (msg) {
         var data = JSON.parse(msg);
         var to = $('#tousername').val();
         if (data.from === to) {
-            $('#chats-list').prepend('<li>' + data.from + ' <span class="open-chat">SAY</span> : ' + data.msg + '</li>');
+            $('#chats-list').prepend('<li>' + data.from + ' <span class="open-chat">【SAY】</span> : ' + data.msg + '</li>');
         }
     });
 
     $('#send').on('click', function () {
         var text = $('#msg').val();
         var to = $('#tousername').val();
-        $('#chats-list').prepend('<li>You <span class="myself-caht">SAY</span> : ' + text + '</li>');
+        $('#chats-list').prepend('<li>You <span class="myself-caht">【SAY】</span> : ' + text + '</li>');
         socket.emit('private chat', {"from": username, "msg": text, "to": to});
         // alert(text);
     })

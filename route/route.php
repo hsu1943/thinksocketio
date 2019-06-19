@@ -9,11 +9,12 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP5!';
-});
 
-Route::get('hello/:name', 'index/hello');
+Route::get('hello/:name', 'index/index/hello');
+
+Route::rule('socketio', 'socketio/index/index');
+Route::rule('chat', 'socketio/index/chat');
+Route::rule('system', 'socketio/index/system');
 
 return [
 
