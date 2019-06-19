@@ -24,6 +24,13 @@ class Server
                 $io->emit('chat message', $msg);
             });
 
+            $all = [
+                'usersNum' => $this->usersNum,
+                'currentUsers' => $this->users,
+            ];
+
+            $io->emit('sendMsg', json_encode($all, JSON_UNESCAPED_UNICODE));
+
             echo 'new connection' . PHP_EOL;
 
             // 监听客户端连接成功发送数据
@@ -135,6 +142,24 @@ class Server
                 }
             });
 
+            $socket->on('changeName', function ($msg) use ($io, $socket) {
+
+                $username = $msg['username'] ?: '';
+                --$this->usersNum;
+                $socket->leave($username);
+                unset($this->users[$username]);
+                echo $username . ' disconnect' . PHP_EOL;
+                $res = [
+                    'username' => $username,
+                    'usersNum' => $this->usersNum,
+                    'currentUsers' => $this->users,
+                    'type' => 'left',
+                ];
+                $io->emit('sendMsg', json_encode($res, JSON_UNESCAPED_UNICODE));
+
+            });
+
+
         });
 
         // 当$io启动后监听一个http端口，通过这个端口可以给任意user或者所有user推送数据
@@ -180,7 +205,8 @@ class Server
     /**
      * 测试数据库连接
      */
-    public function testDb()
+    public
+    function testDb()
     {
         $msg = Db::table('msg')->select();
         var_dump($msg);

@@ -57,12 +57,6 @@
 
         </div>
     </div>
-    <!--<div style="width: 30%;float: right">-->
-    <!--<h3>系统消息</h3>-->
-    <!--<ul id="system">-->
-
-    <!--</ul>-->
-    <!--</div>-->
 </div>
 
 </body>
@@ -73,6 +67,7 @@
     var socket = io('http://127.0.0.1:2021');
     var username;
     var url;
+    var allUsers = new Array();
 
     $(document).ready(function () {
         username = getUsername();
@@ -93,8 +88,8 @@
 
     // 当连接服务端成功时触发connect默认事件
     socket.on('connect', function () {
-        console.log('connect success');
-        console.log('socket.id:' + socket.id);
+//        console.log('connect success');
+//        console.log('socket.id:' + socket.id);
         username = getUsername();
         console.log('从本地读取username ==> ' + username);
         if (username) {
@@ -104,7 +99,7 @@
 
     socket.on('success', function (data) {
         data = JSON.parse(data);
-        console.log(data);
+//        console.log(data);
         username = data.username;
 //        localStorage.setItem('client_username', username);
         console.log(username + '连接成功！');
@@ -116,7 +111,7 @@
         var data = JSON.parse(msg);
         url = $('#url').val();
         var html;
-        console.log(msg);
+//        console.log(data);
         if (data.type === 'say') {
             if (data.from == username) {
                 html = '<li>YOU <span class="open-chat">SAY</span> : ' + data.msg + '</li>';
@@ -134,7 +129,6 @@
             html = '<li><span class="system-chat">' + data.msg + '</span></li>'
         }
 
-
         if (data.type === 'say' || data.type === 'response') {
             $('#chats-list').prepend(html);
         } else if (data.type === 'join' || data.type === 'left') {
@@ -148,16 +142,18 @@
         }
 
 //        统计数据
-        if (typeof(data.usersNum) != undefined) {
+        if (typeof(data.usersNum) != 'undefined') {
+            allUsers = [];
             var users = data.currentUsers;
             var num = data.usersNum;
             var userslist = '';
             for (var key in users) {
                 userslist += key + '；';
+                allUsers.push(key);
             }
+//            console.log(allUsers);
             $('#num').text(num);
-            $('#stat').prepend(userslist);
-//            console.log(num);
+            $('#stat').text(userslist);
 
         }
     });
@@ -188,10 +184,24 @@
             alert('昵称大于4位')
             return false;
         }
+        if (text === username) {
+            alert('昵称未修改');
+            return false;
+        }
+        var index = $.inArray(text, allUsers);
+        if (index >= 0) {
+            alert('昵称被占用');
+            return false;
+        }
+        var oldName = username;
         username = text;
         localStorage.setItem('client_username', username);
-        socket.emit('success', {username: username});
+        if (oldName) {
+//            console.log(oldName);
+            socket.emit('changeName', {username: oldName});
+        }
         fadeInput();
+        socket.emit('success', {username: username});
     }
 
     $('#msg').bind('keyup', function (event) {
