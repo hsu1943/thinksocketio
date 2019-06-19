@@ -2,6 +2,7 @@
 
 namespace app\socketio\controller;
 
+use think\facade\Config;
 use Workerman\Lib\Timer;
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
@@ -165,7 +166,8 @@ class Server
         // 当$io启动后监听一个http端口，通过这个端口可以给任意user或者所有user推送数据
         $io->on('workerStart', function () use ($io) {
             // 监听一个http端口
-            $inner_http_worker = new Worker('http://0.0.0.0:2121');
+            $api_url = Config::get('app.ws.apiHost');
+            $inner_http_worker = new Worker($api_url);
             // 当http客户端发来数据时触发
             $inner_http_worker->onMessage = function ($http_connection, $data) use ($io) {
                 var_dump($data);
