@@ -121,7 +121,7 @@
                     + data.from + '</a>'
                     + ' <span class="open-chat">【SAY】</span> : ' + data.msg + '</li>';
             }
-        } else if (data.type === 'join' || data.type === 'response') {
+        } else if (data.type === 'join') {
             html = '<li>' + data.msg + '</li>'
         } else if (data.type === 'left') {
             html = '<li><span class="private-chat">' + data.username + '</span> has left the chat!</li>'
@@ -129,16 +129,12 @@
             html = '<li><span class="system-chat">' + data.msg + '</span></li>'
         }
 
-        if (data.type === 'say' || data.type === 'response') {
+        if (data.type === 'say') {
             $('#chats-list').prepend(html);
         } else if (data.type === 'join' || data.type === 'left') {
             $('#join-left').prepend(html);
         } else if (data.type === 'system') {
             $('#system').prepend(html);
-        }
-
-        if (data.type === 'response') {
-            $('#msg').val('');
         }
 
 //        统计数据
@@ -171,6 +167,7 @@
     $('#send').on('click', function () {
         var text = $('#msg').val();
         socket.emit('sendMsg', {"username": username, "msg": text});
+        $('#msg').val('');
         // alert(text);
     });
 

@@ -86,13 +86,13 @@ class Server
                 $io->emit('sendMsg', json_encode($bc, JSON_UNESCAPED_UNICODE));
 
 
-                $response = [
-                    'msg' => 'Your message : "' . $msg['msg'] . '" has been sent successfully!',
-                    'type' => 'response',
-                ];
+                // $response = [
+                //     'msg' => 'Your message : "' . $msg['msg'] . '" has been sent successfully!',
+                //     'type' => 'response',
+                // ];
 
                 // 向以用户名定义的组推送消息，达到一对一的推送的效果
-                $io->to($msg['username'])->emit('sendMsg', json_encode($response, JSON_UNESCAPED_UNICODE));
+                // $io->to($msg['username'])->emit('sendMsg', json_encode($response, JSON_UNESCAPED_UNICODE));
 
                 // 向当前客户端推送消息
                 // $socket->emit('sendMsg', json_encode($response));
