@@ -2,43 +2,20 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-
+    <link rel="stylesheet" type="text/css" href="__STATIC__/main.css"/>
     <title>与{$to}私聊</title>
 </head>
-<style>
-    .open-chat {
-        color: springgreen
-    }
-
-    .myself-caht {
-        color: blueviolet
-    }
-
-    body {
-        width: 90%;
-        margin: 5% auto;
-    }
-
-    .menu {
-        float: right;
-    }
-
-    .to {
-        color: brown;
-        font-style: italic;
-    }
-</style>
 <body>
-<h1>与【<span class="to">{$to}</span>】私聊 <a href="/socketio" target="_blank"><span class="menu">广场</span></a></h1>
+<div class="header"><h1><span class="to">{$to}</span></h1></div>
 <input type="hidden" id="tousername" value="{$to}">
-<h3>当前用户【<span class="open-chat" id="username"></span>】</h3>
+<h3>当前用户【<span class="user-name" id="username"></span>】<a href="/socketio" class="fright"
+                                                          target="_blank"><span>返回广场</span></a></h3>
 
 消息：<input type="text" name="" id="msg" title="消息框">
 <button id='send'>发送</button>
 
-<h2>消息列表：</h2>
-<br>
-<div id="chats">
+<h3>消息列表：</h3>
+<div id="chats" style="width: 80%;">
     <ul id="chats-list">
 
     </ul>
@@ -82,14 +59,14 @@
         var data = JSON.parse(msg);
         var to = $('#tousername').val();
         if (data.from === to) {
-            $('#chats-list').prepend('<li>' + data.from + ' <span class="open-chat">【SAY】</span> : ' + data.msg + '</li>');
+            $('#chats-list').prepend('<li>' + data.msg + '</li><div class="clear"></div>');
         }
     });
 
     $('#send').on('click', function () {
         var text = $('#msg').val();
         var to = $('#tousername').val();
-        $('#chats-list').prepend('<li>You <span class="myself-caht">【SAY】</span> : ' + text + '</li>');
+        $('#chats-list').prepend('<li>' + '<span class="open-chat">' + text + '</span></li><div class="clear"></div>');
         socket.emit('private chat', {"from": username, "msg": text, "to": to});
         // alert(text);
     })

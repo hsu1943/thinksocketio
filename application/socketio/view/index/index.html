@@ -5,27 +5,10 @@
     <link rel="stylesheet" type="text/css" href="__STATIC__/main.css"/>
     <title>测试WebSocket聊天室</title>
 </head>
-<style>
-    .private-chat {
-        color: red
-    }
-    .open-chat {
-        color: springgreen
-    }
-
-    .system-chat {
-        color: blueviolet;
-    }
-
-    body {
-        width: 90%;
-        margin: 5% auto;
-    }
-</style>
 <body>
-<h1>广场</h1>
+<div class="header"><h1><span class="to">广场</span></h1></div>
 <input type="hidden" id="url" value="{:url('socketio/index/chat')}">
-<h3>当前用户【<span class="open-chat" id="username"></span>】</h3>
+<h3>当前用户【<span class="user-name" id="username"></span>】</h3>
 <button onclick="fadeInput()">修改昵称</button>
 <div id="change-user" style="display: none">
     <p></p>
@@ -53,12 +36,11 @@
 
         </ul>
         <h3>在线（<span id="num"></span>）</h3>
-        <div id="stat" class="open-chat">
+        <div id="stat" class="user-name">
 
         </div>
     </div>
 </div>
-
 </body>
 <script src='//cdn.bootcss.com/socket.io/2.0.3/socket.io.js'></script>
 <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
@@ -114,7 +96,7 @@
 //        console.log(data);
         if (data.type === 'say') {
             if (data.from == username) {
-                html = '<li>YOU <span class="open-chat">SAY</span> : ' + data.msg + '</li>';
+                html = '<li>YOU <span class="open-chat">【SAY】</span> : ' + data.msg + '</li>';
             } else {
                 html = '<li><a href="'
                     + url + '?username=' + data.from + '" target="_blank">'
