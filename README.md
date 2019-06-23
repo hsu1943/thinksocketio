@@ -57,7 +57,6 @@ return [
 该地址即系统推送消息地址，参数：
 
 ```html
-type：publish
 to：接收人
 content：消息
 ```
