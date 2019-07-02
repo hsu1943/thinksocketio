@@ -66,9 +66,9 @@
     $('#send').on('click', function () {
         var text = $('#msg').val();
         var to = $('#tousername').val();
-        $('#chats-list').prepend('<li>' + '<span class="open-chat">' + text + '</span></li><div class="clear"></div>');
+        $('#chats-list').prepend('<li>' + '<span class="me-say">' + text + '</span></li><div class="clear"></div>');
         socket.emit('private chat', {"from": username, "msg": text, "to": to});
-        // alert(text);
+        $('#msg').val('')
     })
 
     $('#msg').bind('keyup', function (event) {
