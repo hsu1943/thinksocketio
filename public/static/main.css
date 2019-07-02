@@ -1,0 +1,63 @@
+.private-chat {
+    color: #880000;
+}
+.open-chat {
+    color: #4288ce;
+}
+
+.system-chat {
+    color: blueviolet;
+}
+
+.user-name{
+    color: green;
+}
+
+body {
+    width: 90%;
+    margin: 5% auto;
+}
+
+.fright {
+    float: right;
+}
+
+.to {
+    color: brown;
+}
+
+#chats-list{
+    margin-left: -1em;
+}
+
+#chats-list li{
+    line-height: 2em;
+    list-style: none;
+}
+
+/* #chats-list li span{
+    float: right;
+} */
+
+.me-say{
+    float: right;
+    color: #4288ce;
+}
+
+.clear {
+    clear: both;
+}
+
+.header{
+    width: 50%;
+    text-align: center;
+    margin-left: 25%;
+}
+
+.message{
+    font-size: 1.5em;
+    position: fixed;
+    width: 90%;
+    left: 5%;
+    bottom: 1%;
+}
