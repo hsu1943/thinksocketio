@@ -23,12 +23,16 @@
 
 ## 使用说明
 
+以下说明假定已经为项目`public`目录绑定了域名`test.com`并正确部署服务器，访问`test.com`能看到TP5默认首页。
+
+如果修改了配置或者代码，请重新运行服务端，否则代码不生效。
+
 ### 安装
 
 ```bash
 git clone git@github.com:hsu1943/thinksocketio.git
 cd thinksocketio
-composer install
+composer install -vvv
 ```
 
 ### 配置
@@ -38,13 +42,16 @@ composer install
 ```bash
 var socket = io('http://127.0.0.1:2021');
 ```
-
-如果需要使用数据库存储聊天记录消息，导入根目录下`socketio.sql`，配置正确的数据库连接。
-不用的话需要将源代码中数据库存储语句注释。
+### 使用数据库记录消息：
+打开配置后系统会根据昵称将所有聊天记录写入数据库`msg`表中，包括主动推送的消息；
+1. 导入根目录下`socketio.sql`；
+2. 在`config/database.php`中配置正确的数据库连接；
+3. 在`config/socketio/param.php`中将`save_msg`修改为`true`（默认是`false`，不写入到数据库）；
+这里说明一下，请保证数据库能正确连接并且里面有正确的表结构（第一步导入表）再进行第三步配置，否则会出现客户端发完消息即断线。
 
 ### 主动推送系统消息接口
 
-修改配置文件`/config/socketio/app.php`中的配置为监听消息推送地址：
+修改配置文件`/config/socketio/param.php`中的配置为监听消息推送地址：
 
 ```bash
 return [
@@ -63,7 +70,7 @@ content：消息
 
 两种用法：
 
-1. 其他项目POST，GET请求接口即可推送消息
+1. 其他项目POST或GET请求接口即可推送消息
 
 ```html
 向username推送系统消息
@@ -76,7 +83,7 @@ http://test.com/system?content=系统推送消息测试
 
 2. 本项目中推送系统消息：
 
-   已将推送封装在Msg的模型中，使用：
+已将推送封装在Msg的模型中，使用：
 
 ```php
 $res = Msg::send($to, $content);

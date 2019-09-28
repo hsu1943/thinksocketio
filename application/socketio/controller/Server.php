@@ -1,21 +1,32 @@
 <?php
+/**
+ * Author: 行星带
+ * Url: https://beltxman.com
+ */
 
 namespace app\socketio\controller;
 
+use app\socketio\model\Msg;
+use think\Controller;
 use think\facade\Config;
-use Workerman\Lib\Timer;
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
-use think\Db;
 
 /** 服务端
  * Class Server
  * @package app\socketio\controller
  */
-class Server
+class Server extends Controller
 {
     private $users;
     private $usersNum;
+    private $saveMsg;
+
+    protected function initialize()
+    {
+        $this->saveMsg = Config::get('param.save_msg');
+    }
+
 
     public function index()
     {
@@ -85,12 +96,6 @@ class Server
 
                 $io->emit('sendMsg', json_encode($bc, JSON_UNESCAPED_UNICODE));
 
-
-                // $response = [
-                //     'msg' => 'Your message : "' . $msg['msg'] . '" has been sent successfully!',
-                //     'type' => 'response',
-                // ];
-
                 // 向以用户名定义的组推送消息，达到一对一的推送的效果
                 // $io->to($msg['username'])->emit('sendMsg', json_encode($response, JSON_UNESCAPED_UNICODE));
 
@@ -104,10 +109,15 @@ class Server
                     'to' => '',
                     'type' => 'public'
                 ];
-                Db::table('msg')->insert($data);
+
+                if ($this->saveMsg && !$this->insertMsg($data)) {
+                    echo "消息入库失败" . PHP_EOL;
+                }
+
+
             });
 
-            //            一对一私聊
+            // 一对一私聊
             $socket->on('private chat', function ($msg) use ($io, $socket) {
 
                 var_dump($msg);
@@ -117,8 +127,10 @@ class Server
                     $io->to($msg['to'])->emit('private chat', json_encode($msg, JSON_UNESCAPED_UNICODE));
 
                     // 不需要存储私聊消息注释这句
-                    $msg['type'] = 'private';
-                    Db::table('msg')->insert($msg);
+                    if ($this->saveMsg && !$this->insertMsg($msg)) {
+                        echo "消息入库失败" . PHP_EOL;
+                    }
+
                 }
             });
 
@@ -166,7 +178,7 @@ class Server
         // 当$io启动后监听一个http端口，通过这个端口可以给任意user或者所有user推送数据
         $io->on('workerStart', function () use ($io) {
             // 监听一个http端口
-            $api_url = Config::get('app.ws.apiHost');
+            $api_url = Config::get('param.ws.apiHost');
             $inner_http_worker = new Worker($api_url);
             // 当http客户端发来数据时触发
             $inner_http_worker->onMessage = function ($http_connection, $data) use ($io) {
@@ -192,8 +204,15 @@ class Server
                         } else {
                             $io->emit('sendMsg', json_encode($msg, JSON_UNESCAPED_UNICODE));
                         }
-                        Db::table('msg')->insert($msg);
-                        return $http_connection->send('ok');
+                        if ($this->saveMsg) {
+                            if ($this->insertMsg($msg)) {
+                                return $http_connection->send('ok');
+                            } else {
+                                return $http_connection->send('fail');
+                            }
+                        } else {
+                            return $http_connection->send('ok');
+                        }
                 }
                 return $http_connection->send('fail');
             };
@@ -204,14 +223,10 @@ class Server
         Worker::runAll();
     }
 
-    /**
-     * 测试数据库连接
-     */
-    public
-    function testDb()
-    {
-        $msg = Db::table('msg')->select();
-        var_dump($msg);
-    }
 
+    private function insertMsg($data)
+    {
+        $msg = new Msg();
+        return $msg->save($data);
+    }
 }

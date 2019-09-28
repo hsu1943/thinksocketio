@@ -1,16 +1,33 @@
 <?php
+/**
+ * Author: 行星带
+ * Url: https://beltxman.com
+ */
 
 namespace app\socketio\model;
 
 use think\Model;
 use think\facade\Config;
 
+/**
+ * Class Msg
+ * @package app\socketio\model
+ * @property int $id
+ * @property string $msg
+ * @property string $from
+ * @property string $to
+ * @property string $type
+ * @property int $create_time
+ */
 class Msg extends Model
 {
+    protected $table = 'msg';
+    protected $pk = 'id';
+
     public static function send($to = '', $content)
     {
         // 推送的url地址，使用自己的服务器地址
-        $push_api_url = Config::get('app.ws.apiHost');
+        $push_api_url = Config::get('param.ws.apiHost');
 
         $post_data = array(
             "type" => "publish",

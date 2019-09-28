@@ -1,4 +1,8 @@
 <?php
+/**
+ * Author: 行星带
+ * Url: https://beltxman.com
+ */
 
 namespace app\socketio\controller;
 
