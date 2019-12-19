@@ -8,6 +8,8 @@ namespace app\socketio\controller;
 
 use app\socketio\model\Msg;
 use think\Controller;
+use think\Db;
+use think\exception\DbException;
 use think\facade\Config;
 use Workerman\Worker;
 use PHPSocketIO\SocketIO;
@@ -24,13 +26,15 @@ class Server extends Controller
 
     protected function initialize()
     {
+        // 读取配置文件是否需要将消息存储到数据库
         $this->saveMsg = Config::get('param.save_msg');
     }
 
 
     public function index()
     {
-        $io = new SocketIO(2021);
+        $port = Config::get('param.ws.port');
+        $io = new SocketIO($port);
         $io->on('connection', function ($socket) use ($io) {
             $socket->on('chat message', function ($msg) use ($io) {
                 $io->emit('chat message', $msg);
@@ -41,7 +45,7 @@ class Server extends Controller
                 'currentUsers' => $this->users,
             ];
 
-            $io->emit('sendMsg', json_encode($all, JSON_UNESCAPED_UNICODE));
+            $io->emit('sendMsg', json_encode($all, 256));
 
             echo 'new connection' . PHP_EOL;
 
@@ -68,7 +72,7 @@ class Server extends Controller
                         'currentUsers' => $this->users,
                     ];
 
-                    $io->emit('sendMsg', json_encode($bc, JSON_UNESCAPED_UNICODE));
+                    $io->emit('sendMsg', json_encode($bc, 256));
                 } else {
                     ++$this->users[$username];
                 }
@@ -79,13 +83,14 @@ class Server extends Controller
                     'usersNum' => $this->usersNum,
                     'currentUsers' => $this->users,
                 ];
-                $socket->emit('success', json_encode($res, JSON_UNESCAPED_UNICODE));
+                $socket->emit('success', json_encode($res, 256));
+                echo date('Y-m-d H:i:s') . " $username join" . PHP_EOL;
             });
 
 
             $socket->on('sendMsg', function ($msg) use ($io, $socket) {
 
-                var_dump($msg);
+                echo date('Y-m-d H:i:s') . " 收到广播消息：" . json_encode($msg, 256) . PHP_EOL;
 
                 // 向所有客户端广播发送消息 *** SAY
                 $bc = [
@@ -94,7 +99,7 @@ class Server extends Controller
                     'type' => 'say',
                 ];
 
-                $io->emit('sendMsg', json_encode($bc, JSON_UNESCAPED_UNICODE));
+                $io->emit('sendMsg', json_encode($bc, 256));
 
                 // 向以用户名定义的组推送消息，达到一对一的推送的效果
                 // $io->to($msg['username'])->emit('sendMsg', json_encode($response, JSON_UNESCAPED_UNICODE));
@@ -110,8 +115,12 @@ class Server extends Controller
                     'type' => 'public'
                 ];
 
-                if ($this->saveMsg && !$this->insertMsg($data)) {
-                    echo "消息入库失败" . PHP_EOL;
+                if ($this->saveMsg) {
+                    try {
+                        $this->insertMsg($data);
+                    } catch (\Exception $e) {
+                        echo "消息入库失败: " . $e->getMessage() . PHP_EOL;
+                    }
                 }
 
 
@@ -120,15 +129,18 @@ class Server extends Controller
             // 一对一私聊
             $socket->on('private chat', function ($msg) use ($io, $socket) {
 
-                var_dump($msg);
+                echo date('Y-m-d H:i:s') . " 收到私聊消息：" . json_encode($msg, 256) . PHP_EOL;
 
                 if (!empty($msg['to']) && !empty($msg['from'])) {
 
-                    $io->to($msg['to'])->emit('private chat', json_encode($msg, JSON_UNESCAPED_UNICODE));
+                    $io->to($msg['to'])->emit('private chat', json_encode($msg, 256));
 
-                    // 不需要存储私聊消息注释这句
-                    if ($this->saveMsg && !$this->insertMsg($msg)) {
-                        echo "消息入库失败" . PHP_EOL;
+                    if ($this->saveMsg) {
+                        try {
+                            $this->insertMsg($msg);
+                        } catch (DbException $e) {
+                            echo "消息入库失败: " . $e->getMessage() . PHP_EOL;
+                        }
                     }
 
                 }
@@ -151,7 +163,8 @@ class Server extends Controller
                         'currentUsers' => $this->users,
                         'type' => 'left',
                     ];
-                    $socket->broadcast->emit('sendMsg', json_encode($res, JSON_UNESCAPED_UNICODE));
+                    $socket->broadcast->emit('sendMsg', json_encode($res, 256));
+                    echo date('Y-m-d H:i:s') . " {$socket->username} leave" . PHP_EOL;
                 }
             });
 
@@ -168,8 +181,7 @@ class Server extends Controller
                     'currentUsers' => $this->users,
                     'type' => 'left',
                 ];
-                $io->emit('sendMsg', json_encode($res, JSON_UNESCAPED_UNICODE));
-
+                $io->emit('sendMsg', json_encode($res, 256));
             });
 
 
@@ -182,7 +194,6 @@ class Server extends Controller
             $inner_http_worker = new Worker($api_url);
             // 当http客户端发来数据时触发
             $inner_http_worker->onMessage = function ($http_connection, $data) use ($io) {
-                var_dump($data);
                 $params = $_POST ? $_POST : $_GET;
                 // 推送数据的url格式 type=publish&to=user&content=xxxx
                 switch (@$params['type']) {
@@ -194,20 +205,24 @@ class Server extends Controller
                             'from' => 'system',
                             'type' => 'system',
                         ];
+                        echo date('Y-m-d H:i:s') . " api收到推送消息：" . json_encode($msg, 256) . PHP_EOL;
                         if ($to) {
                             $msg['to'] = $to ?: '';
                             if (isset($this->users[$to])) {
-                                $io->to($to)->emit('sendMsg', json_encode($msg, JSON_UNESCAPED_UNICODE));
+                                $io->to($to)->emit('sendMsg', json_encode($msg, 256));
                             } else {
                                 return $http_connection->send($to . 'is offline');
                             }
                         } else {
-                            $io->emit('sendMsg', json_encode($msg, JSON_UNESCAPED_UNICODE));
+                            $io->emit('sendMsg', json_encode($msg, 256));
                         }
+
                         if ($this->saveMsg) {
-                            if ($this->insertMsg($msg)) {
+                            try {
+                                $this->insertMsg($msg);
                                 return $http_connection->send('ok');
-                            } else {
+                            } catch (DbException $e) {
+                                echo "消息入库失败: " . $e->getMessage() . PHP_EOL;
                                 return $http_connection->send('fail');
                             }
                         } else {
@@ -226,7 +241,6 @@ class Server extends Controller
 
     private function insertMsg($data)
     {
-        $msg = new Msg();
-        return $msg->save($data);
+        Db::name('msg')->insert($data);
     }
 }

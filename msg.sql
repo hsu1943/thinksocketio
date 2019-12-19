@@ -11,7 +11,7 @@
  Target Server Version : 100137
  File Encoding         : 65001
 
- Date: 19/06/2019 22:54:58
+ Date: 19/12/2019 11:00:05
 */
 
 SET NAMES utf8mb4;
@@ -29,6 +29,6 @@ CREATE TABLE `msg`  (
   `type` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '消息类型',
   `create_time` timestamp(0) NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '消息记录' ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 216 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '消息记录' ROW_FORMAT = Compact;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -37,21 +37,24 @@ composer install -vvv
 
 ### 配置
 
-模板文件`index.html`和`chat.html`中`socket`修改为你的`socket`服务端地址。
+模板文件`/application/socketio/view/index/index.html`和`/application/socketio/view/index/chat.html`中`socket`修改为你的`socket`服务端地址，默认测试端口2021，端口号可以在`/config/socketio/param.php`中配置。这里是本机测试，用`http://127.0.0.1:2021`。
 
 ```bash
 var socket = io('http://127.0.0.1:2021');
 ```
 ### 使用数据库记录消息：
-打开配置后系统会根据昵称将所有聊天记录写入数据库`msg`表中，包括主动推送的消息；
-1. 导入根目录下`socketio.sql`；
-2. 在`config/database.php`中配置正确的数据库连接；
+
+如果你需要使用数据库存储消息，按照下面的步骤打开配置，打开配置后系统会根据昵称将所有聊天记录写入数据库`msg`表中，包括主动推送的消息；
+
+1. 在`config/database.php`中配置数据库，保证数据库能正确连接；
+2. 导入根目录下`msg.sql`到数据库；
 3. 在`config/socketio/param.php`中将`save_msg`修改为`true`（默认是`false`，不写入到数据库）；
-这里说明一下，请保证数据库能正确连接并且里面有正确的表结构（第一步导入表）再进行第三步配置，否则会出现客户端发完消息即断线。
+
+这里说明一下，请保证数据库能正确连接并且里面有正确的表结构（第一步导入表）再进行第三步配置。
 
 ### 主动推送系统消息接口
 
-修改配置文件`/config/socketio/param.php`中的配置为监听消息推送地址：
+修改配置文件`/config/socketio/param.php`中的配置为监听消息推送地址，这里本地测试，使用本地2121端口；
 
 ```bash
 return [
@@ -97,6 +100,7 @@ return $res == 'ok' ? '系统消息推送成功' : '系统消息推送失败';
 ```bash
 php ./public/server.php
 ```
+这里可以将输出写到某个日志文件中，或者使用`supervisor`来管理服务端。
 
 访问以下地址即可进入公频：
 
@@ -108,11 +112,12 @@ http://test.com/socketio
 
 ## 更新
 
+* 2019-12-19 增加服务端的输出，以及端口配置项，保存数据库加上错误处理，更新项目README；
 * 2019-06-19 增加在线人数统计，在线用户列表，修改昵称，添加系统主动推送接口（广播或私信）；
 
 ## 开发记录
 
-以下两篇文章是在开发过程中的记录，代码不是最新，最新代码以本项目为准，有问题可以去文章里留言。
+以下两篇文章是在开发过程中的记录，代码不是最新，最新代码以本项目`github`为准，有问题可以去文章里留言。
 
 [ThinkPHP 5.1+PHPSocket.IO实现websocket搭建聊天室+私聊](https://beltxman.com/archives/2329.html "ThinkPHP 5.1+PHPSocket.IO实现websocket搭建聊天室+私聊")
 
